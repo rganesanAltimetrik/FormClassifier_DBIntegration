@@ -39,6 +39,7 @@ public class FileClassifierUtil {
 	}
 	
 
+	@SuppressWarnings("rawtypes")
 	public static String classifyForm(String file) {
 
 		// Read All Keywords from Keywords File
@@ -56,8 +57,17 @@ public class FileClassifierUtil {
 		if (!processedText.equals("") && !processedText.equals(null) && processedText.length() > 0) {
 
 			// Convert the Processed Text to List
-			String[] processedTextArray = processedText.split("\\s+");
-			List<String> processedTextList = Arrays.asList(processedTextArray);
+			List<String> processedTextList =  new ArrayList<String>();
+			Hashtable<String, Integer> words = ExtractTextUtil.countWords(processedText);
+			for (Map.Entry singleWord : words.entrySet()) {
+				int value = (Integer) singleWord.getValue();
+				if (value > 1) {
+					String word = singleWord.getKey().toString();
+					for(int i=0; i<value; i++) {
+						processedTextList.add(word);
+					}
+				}
+			}
 
 			// Comparing the Processed Text with Keywords
 			Hashtable<String, Integer> matchingKeyWords = new Hashtable<>();
@@ -99,7 +109,11 @@ public class FileClassifierUtil {
 
 			// Get the File Type for Value
 			if (greatestValue > 0) {
-				fileType = getKeyFromValue(matchingKeyWords, greatestValue).toString();
+				if(numberOfMatchingWords.get(0) == numberOfMatchingWords.get(1)) {
+					fileType = "!!! File Not Classified !!!";
+				}else {
+					fileType = getKeyFromValue(matchingKeyWords, greatestValue).toString();
+				}
 			} else {
 				fileType = "!!! File Not Classified !!!";
 			}
